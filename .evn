@@ -1,1 +1,2 @@
-mongodb+srv://<ankurhce>:<kuR6obp0lL35bfpG>@cluster0.ta8qg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+MONGO_URI=mongodb+srv://ankurhce:kuR6obp0lL35bfpG@cluster.mongodb.net/your_database_name
+PORT=5000
