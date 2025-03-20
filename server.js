@@ -1,63 +1,94 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
+
 const app = express();
-dotenv.config();
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("Connected to MongoDB"))
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
+// Organization Schema
+const OrganizationSchema = new mongoose.Schema({
+    name: String,
+    address: String,
+    phone: String,
+    contact: String
+});
+
+const Organization = mongoose.model('Organization', OrganizationSchema);
+
 // User Schema
-const userSchema = new mongoose.Schema({
-  spocName: String,
-  email: String,
-  organization: String,
-  state: String,
-  address: String,
-  phone: String, // Mobile number set as password during registration
-  pin: String,
+const UserSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    password: String,
 });
 
-// User Model
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model('User', UserSchema);
 
-// Routes for registration and login
-app.post('/register', async (req, res) => {
-  const { spocName, email, organization, state, address, phone, pin } = req.body;
-
-  try {
-    const newUser = new User({ spocName, email, organization, state, address, phone, pin });
-    await newUser.save();
-    res.status(201).json({ message: 'User registered successfully!', user: newUser });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post('/login', async (req, res) => {
-  const { spocName, password } = req.body;
-
-  try {
-    const user = await User.findOne({ spocName, phone: password }); // Password is the phone number
-    if (user) {
-      res.status(200).json({ message: 'Login successful!', user });
-    } else {
-      res.status(400).json({ message: 'Invalid credentials!' });
+// Routes for Organizations
+app.get('/organizations', async (req, res) => {
+    try {
+        const organizations = await Organization.find();
+        res.json(organizations);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
-// Port
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.post('/organizations', async (req, res) => {
+    const { name, address, phone, contact } = req.body;
+    const newOrg = new Organization({ name, address, phone, contact });
+    
+    try {
+        const savedOrg = await newOrg.save();
+        res.status(201).json(savedOrg);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
 });
+
+// User Registration
+app.post('/register', async (req, res) => {
+    const { name, email, password } = req.body;
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        
+        const newUser = new User({ name, email, password: hashedPassword });
+        await newUser.save();
+        res.status(201).json({ message: 'User registered successfully!' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// User Login
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: 'User not found!' });
+        
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials!' });
+        
+        res.status(200).json({ message: 'Login successful!', user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
