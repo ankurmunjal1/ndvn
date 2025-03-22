@@ -1,2 +1,2 @@
-MONGO_URI=mongodb+srv://ankurhce:kuR6obp0lL35bfpG@cluster.mongodb.net/your_database_name
+MONGO_URI=mongodb+srv://ankurhce:kuR6obp0lL35bfpG@cluster.mongodb.net/ndvn
 PORT=5000
