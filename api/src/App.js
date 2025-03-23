@@ -70,6 +70,7 @@ function App() {
     setPassword("");
   };
 
+  // eslint-disable-next-line no-unused-vars
   // Handle password change
   const handlePasswordChange = () => {
     if (newPassword) {
