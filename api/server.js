@@ -3,10 +3,18 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Ensure MONGO_URI is set
+if (!process.env.MONGO_URI) {
+    console.error("MONGO_URI is missing in .env file!");
+    process.exit(1);
+}
 
 // Middleware
 app.use(cors());
@@ -18,6 +26,11 @@ mongoose.connect(process.env.MONGO_URI, {
     useUnifiedTopology: true,
 }).then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
+
+// Handle Mongoose connection errors
+mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection error:", err);
+});
 
 // Organization Schema
 const OrganizationSchema = new mongoose.Schema({
@@ -91,4 +104,19 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// **Serve Frontend (React/Vue/Angular)**
+const frontendPath = path.join(__dirname, '../build');  // Adjust path based on project structure
+app.use(express.static(frontendPath));
+
+// Ensure frontend build exists
+if (!fs.existsSync(path.join(frontendPath, "index.html"))) {
+    console.error("Frontend build/index.html not found! Run `npm run build` in frontend.");
+}
+
+// Handle all other routes (SPA support)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
+// Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
