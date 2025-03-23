@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
-
+const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 const PORT = process.env.PORT || 5000;
 
