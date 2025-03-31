@@ -11,7 +11,7 @@ export const fetchOrganizations = async () => {
 
 export const createOrganization = async (organizationData) => {
     try {
-        const response = await fetch(`${API_URL}/organizations`, {
+        const response = await fetch(`${API_URL}/api/organizations`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

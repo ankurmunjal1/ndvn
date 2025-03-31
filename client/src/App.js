@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchOrganizations, registerUser, loginUser } from "./api";
+import './Appstyle.css';  // Importing the AppStyle.css for styling
 
 function App() {
     const [organizations, setOrganizations] = useState([]);
@@ -42,24 +43,26 @@ function App() {
     };
 
     return (
-        <div>
+        <div className="App">
             <h1>Organizations</h1>
 
             {loading && <p>Loading organizations...</p>}
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && <p className="error-message">{error}</p>}
 
             {!loading && !error && organizations.length === 0 && (
                 <p>No organizations found.</p>
             )}
 
-            <ul>
+            <ul className="organization-list">
                 {organizations.map((org) => (
-                    <li key={org._id}>{org.name}</li>
+                    <li key={org._id} className="organization-item">
+                        {org.name}
+                    </li>
                 ))}
             </ul>
 
-            <button onClick={handleRegister}>Register</button>
-            <button onClick={handleLogin}>Login</button>
+            <button className="btn" onClick={handleRegister}>Register</button>
+            <button className="btn" onClick={handleLogin}>Login</button>
         </div>
     );
 }
