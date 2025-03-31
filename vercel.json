@@ -2,14 +2,25 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",
+      "src": "client/package.json",  // React frontend build (assumes frontend is in the 'client' folder)
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "client/build"  // Specify the build directory for React
+      }
+    },
+    {
+      "src": "server.js",  // Node.js backend API
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",  // Backend API routes
       "dest": "/server.js"
+    },
+    {
+      "src": "/(.*)",  // Frontend routes
+      "dest": "/client/build/$1"
     }
   ]
 }
